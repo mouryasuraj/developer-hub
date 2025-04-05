@@ -1,0 +1,24 @@
+{
+  "name": "developerhub-backend",
+  "version": "1.0.0",
+  "description": "This is a backend service for developer hub",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "github",
+    "url": "github+https://github.com/mouryasuraj/developer-hub.git"
+  },
+  "keywords": [
+    "nodejs",
+    "javascript",
+    "mongoose"
+  ],
+  "author": "mouryasuraj",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mouryasuraj/developer-hub/issues"
+  },
+  "homepage": "https://github.com/mouryasuraj/developer-hub#readme"
+}
