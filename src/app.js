@@ -14,7 +14,6 @@ app.post("/signup", async (req, res) => {
     firstName: "Suraj",
     lastName: "Mourya",
     email: "suraj@dmeo.com",
-    password: "123123123",
     age: 24,
     gender: "Male",
   };
