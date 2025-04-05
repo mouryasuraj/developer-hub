@@ -1,7 +1,7 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 
 const connectDB = async () =>{
     await mongoose.connect(process.env.MONGODBURI)
 }
 
-module.exports = connectDB
+export default connectDB;

@@ -1,6 +1,7 @@
 {
   "name": "developerhub-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "This is a backend service for developer hub",
   "main": "app.js",
   "scripts": {
