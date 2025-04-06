@@ -29,6 +29,36 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+
+// API - feed
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({})
+    res.json(users);
+  } catch (error) {
+    console.log("an error occured during getting all users");
+    res.status(400).send("something went wrong");
+  }
+});
+
+
+//API - Get user by userId
+app.get("/getUser",async(req,res)=>{
+  const id = req.query.id
+  try {
+    const user = await User.findById({_id:id})
+    if(!user){
+      res.status(404).send("User not found")
+      return
+    }
+    res.json(user)
+  } catch (error) {
+    console.log("error", error)
+    res.status(400).send("something went wrong");
+  }
+})
+
+
 //Connnecting to database
 connectDB()
   .then(() => {
