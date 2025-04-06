@@ -8,21 +8,21 @@ import User from "./models/user.js";
 const app = express();
 const PORT = process.env.PORT;
 
+app.use(express.json()) // This middleware is used to convert the incoming JSON request into javascript object.
+
 // API - Signup
 app.post("/signup", async (req, res) => {
-  const reqBody = {
-    firstName: "Suraj",
-    lastName: "Mourya",
-    email: "suraj@dmeo.com",
-    age: 24,
-    gender: "Male",
-  };
-
-  const user = new User(reqBody);
+  
+  const user = new User(req.body)
 
   try {
     await user.save();
-    res.send("User added successfully");
+    res.json({
+      message:"User Created Successfully",
+      details:{
+        email:req.body.email
+      }
+    });
   } catch (error) {
     console.log("an error occured during creating a user");
     res.status(400).send("something went wrong");
