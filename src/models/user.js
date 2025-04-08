@@ -4,22 +4,47 @@ const {Schema} = mongoose
 
 const userSchema = new Schema({
     firstName:{
-        type:String
+        type:String,
+        required:true,
+        trim:true,
+        minLength:1,
+        maxLength:15,
+        // match:/^[a-bA-B ]+$/,
     },
     lastName:{
-        type:String
+        type:String,
+        required:true,
+        trim:true,
+        minLength:1,
+        maxLength:15,
+        // match:/^[a-bA-B ]+$/
     },
     email:{
-        type:String
+        type:String,
+        unique:true,
+        required:true,
+        trim:true,
+        minLength:6,
+        maxLength:254,
+        match:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     },
     password:{
-        type:String
+        type:String,
+        required:true,
+        minLength:8,
+        maxLength:16,
+        match:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%^&*()_+{}[\]:;"'<>,.?/~\\-]).{8,16}$/
+
     },
     age:{
-        type:Number
+        type:Number,
+        min:18,
+        max:60
     },
     gender:{
-        type:String
+        type:String,
+        enum:["Male","Female","Others"],
+        trim:true,
     }
 })
 

@@ -23,7 +23,7 @@ app.post("/signup", async (req, res) => {
       },
     });
   } catch (error) {
-    console.log("an error occured during creating a user");
+    console.log("an error occured during creating a user",error);
     res.status(400).send("something went wrong");
   }
 });
@@ -97,7 +97,7 @@ app.patch("/updateUser", async (req, res) => {
 
 //Connnecting to database
 connectDB()
-  .then(() => {
+  .then(async() => {
     console.log("Database connection established");
     app.listen(PORT, () => {
       console.log(`Server is running on port: ${PORT}`);
