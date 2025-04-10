@@ -1,5 +1,5 @@
 //User Schema
-export const allowedUserFieldUpdate = ["firstName","lastName","gender","photoUrl"]
-export const allowedSignUpFields = ["firstName","lastName","email","password","age","gender","photoUrl"]
-export const allowedGenders = ["Male","Female","Others"]
-
+export const allowedUserFieldUpdate = ["firstName","lastName","gender","photoUrl","about"]
+export const allowedSignUpFields = ["firstName","lastName","email","password","age","gender","about","photoUrl"]
+export const allowedLoginFields = ["email","password"]
+export const allowedGenders = ["Male","Female","Others"];

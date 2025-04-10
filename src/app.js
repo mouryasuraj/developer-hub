@@ -1,9 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 dotenv.config();
 import connectDB from "./config/database.js";
 import User from "./models/user.js";
 import { allowedSignUpFields, allowedUserFieldUpdate } from "./constants.js";
+import {
+  validateLoginData,
+  validateSignUpData,
+  validateUpdateProfileData,
+} from "./utils/validation.js";
 
 //Creating an express application - Server
 const app = express();
@@ -15,18 +21,35 @@ app.use(express.json()); // This middleware is used to convert the incoming JSON
 app.post("/signup", async (req, res) => {
   try {
     const body = req.body;
-    if (!body) {
-      throw new Error("Request body is missing");
-    }
+    //validate request body
+    validateSignUpData(body);
 
-    const isFieldsAllowed = Object.keys(body).every((field) =>
-      allowedSignUpFields.includes(field)
-    );
-    if (!isFieldsAllowed) {
-      throw new Error("Sign up is not allowed");
-    }
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      age,
+      gender,
+      about,
+      photoUrl,
+    } = body;
 
-    const user = new User(body);
+    //Encrypt Passoword
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      age,
+      gender,
+      about,
+      photoUrl,
+    });
+
     await user.save();
     res.json({
       message: "User Created Successfully",
@@ -36,7 +59,39 @@ app.post("/signup", async (req, res) => {
     });
   } catch (error) {
     console.log("an error occured during creating a user", error);
-    res.status(400).send("something went wrong "+error);
+    if (error.code === 11000) {
+      res.status(409).send("Email already exists");
+      return;
+    }
+    res.status(400).send("something went wrong " + error);
+  }
+});
+
+// API - login
+app.post("/login", async (req, res) => {
+  const body = req.body;
+  try {
+    validateLoginData(body);
+
+    console.log("Hello");
+
+    const { email, password } = body;
+
+    // Check user exist in DB or not
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      throw new Error("Invalid Credentials");
+    }
+
+    res.send("Logged in successfully......");
+  } catch (error) {
+    console.log("Error: " + error);
+    res.status(500).send("Something went wrong " + error.message);
   }
 });
 
@@ -53,8 +108,11 @@ app.get("/feed", async (req, res) => {
 
 //API - Get user by userId
 app.get("/getUser", async (req, res) => {
-  const id = req.query.id;
   try {
+    const id = req.query.id;
+    if (!id) {
+      throw new Error("Missing query params: id");
+    }
     const user = await User.findById({ _id: id });
     if (!user) {
       res.status(404).send("User not found");
@@ -63,44 +121,39 @@ app.get("/getUser", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.log("error", error);
-    res.status(500).send("something went wrong");
+    res.status(500).send("something went wrong " + error.message);
   }
 });
 
 //API - Delete user by id
 app.delete("/deleteUser", async (req, res) => {
-  const userId = req.query.userId;
   try {
-    await User.findByIdAndDelete(userId);
+    const userId = req.query.userId;
+    if (!userId) throw new Error("Missing query params");
+
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      res.status(404).send("User not found");
+      return;
+    }
     res.send("User Deleted Successfully");
   } catch (error) {
     console.log("error", error);
-    res.status(500).send("something went wrong");
+    res.status(500).send("something went wrong " + error.message);
   }
 });
 
 //API - Update user by id
 app.patch("/updateUser", async (req, res) => {
-  const userId = req.query.userId;
-  const dataToUpdate = req.body;
-  if (!userId || !dataToUpdate) {
-    res.status(400).send("userid or request body is missing");
-    return;
-  }
   try {
-    const isUpdateAllowed = Object.keys(req.body).every((field) =>
-      allowedUserFieldUpdate.includes(field)
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Update is not allowed");
-    }
-
+    validateUpdateProfileData(req);
+    const userId = req.query.userId;
+    const dataToUpdate = req.body;
     const user = await User.findByIdAndUpdate(userId, dataToUpdate, {
       returnOriginal: false,
     });
-
     if (!user) {
-      res.status(404).send("Id not found");
+      res.status(404).send("User not found");
       return;
     }
     res.json({
@@ -109,7 +162,7 @@ app.patch("/updateUser", async (req, res) => {
     });
   } catch (error) {
     console.log("error", error);
-    res.status(500).send("something went wrong " + error);
+    res.status(500).send("something went wrong " + error.message);
   }
 });
 

@@ -38,8 +38,6 @@ const userSchema = new Schema({
     password:{
         type:String,
         required:true,
-        minLength:8,
-        maxLength:16,
         // match:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%^&*()_+{}[\]:;"'<>,.?/~\\-]).{8,16}$/
         validate(value){
             if(!validator.isStrongPassword(value)){
@@ -56,6 +54,11 @@ const userSchema = new Schema({
         type:String,
         enum:allowedGenders,
         trim:true,
+    },
+    about:{
+        type:String,
+        maxLength:200,
+        trim:true
     },
     photoUrl:{
         type:String,
