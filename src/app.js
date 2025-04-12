@@ -1,21 +1,23 @@
 import express from "express";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
 dotenv.config();
 import connectDB from "./config/database.js";
 import User from "./models/user.js";
-import { allowedSignUpFields, allowedUserFieldUpdate } from "./constants.js";
 import {
   validateLoginData,
   validateSignUpData,
   validateUpdateProfileData,
 } from "./utils/validation.js";
+import { userAuth } from "./middlewares/auth.js";
 
 //Creating an express application - Server
 const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json()); // This middleware is used to convert the incoming JSON request into javascript object.
+app.use(cookieParser()); // This middleware is used to convert the cookie javascript object
 
 // API - Signup
 app.post("/signup", async (req, res) => {
@@ -72,9 +74,6 @@ app.post("/login", async (req, res) => {
   const body = req.body;
   try {
     validateLoginData(body);
-
-    console.log("Hello");
-
     const { email, password } = body;
 
     // Check user exist in DB or not
@@ -82,11 +81,17 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid Credentials");
     }
-
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await user.verifyPassword(password);
     if (!isPasswordCorrect) {
       throw new Error("Invalid Credentials");
     }
+
+    // Generate token
+    const token = await user.getJWT();
+    res.cookie("token", token, {
+      httpOnly: true,
+      expires: new Date(Date.now() + 3600000),
+    });
 
     res.send("Logged in successfully......");
   } catch (error) {
@@ -96,7 +101,7 @@ app.post("/login", async (req, res) => {
 });
 
 // API - feed
-app.get("/feed", async (req, res) => {
+app.get("/feed", userAuth, async (req, res) => {
   try {
     const users = await User.find({});
     res.json(users);
@@ -107,7 +112,7 @@ app.get("/feed", async (req, res) => {
 });
 
 //API - Get user by userId
-app.get("/getUser", async (req, res) => {
+app.get("/getUser", userAuth, async (req, res) => {
   try {
     const id = req.query.id;
     if (!id) {
@@ -126,7 +131,7 @@ app.get("/getUser", async (req, res) => {
 });
 
 //API - Delete user by id
-app.delete("/deleteUser", async (req, res) => {
+app.delete("/deleteUser", userAuth, async (req, res) => {
   try {
     const userId = req.query.userId;
     if (!userId) throw new Error("Missing query params");
@@ -144,7 +149,7 @@ app.delete("/deleteUser", async (req, res) => {
 });
 
 //API - Update user by id
-app.patch("/updateUser", async (req, res) => {
+app.patch("/updateUser", userAuth, async (req, res) => {
   try {
     validateUpdateProfileData(req);
     const userId = req.query.userId;
@@ -163,6 +168,21 @@ app.patch("/updateUser", async (req, res) => {
   } catch (error) {
     console.log("error", error);
     res.status(500).send("something went wrong " + error.message);
+  }
+});
+
+app.get("/profile", userAuth, (req, res) => {
+  try {
+    const user = req.user;
+    res.json({
+      email: user.email,
+      name: user.firstName + " " + user.lastName,
+      age: user.age,
+      gender: user.gender,
+    });
+  } catch (error) {
+    console.log("Something went wrong : ", error);
+    res.status(400).send("Something went wrong");
   }
 });
 
