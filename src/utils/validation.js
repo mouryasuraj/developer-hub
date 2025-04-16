@@ -1,6 +1,7 @@
 import {
   allowedGenders,
   allowedLoginFields,
+  allowedResetPasswordFields,
   allowedSignUpFields,
   allowedUserFieldUpdate,
 } from "../constants.js";
@@ -196,9 +197,9 @@ const getUpdateUserValidation = (body) => {
 
 export const validateUpdateProfileData = (req) => {
   const body = req.body;
-  const userId = req.query.userId;
+  const userId = req.params.userId;
   if (!body) throw new Error("Request body is missing");
-  if (!userId) throw new Error("Cannot find userId query param");
+  if (!userId) throw new Error("Cannot find userId param");
 
   const invalidFields = Object.keys(body).filter(
     (field) => !allowedUserFieldUpdate.includes(field)
@@ -209,6 +210,54 @@ export const validateUpdateProfileData = (req) => {
   const validations = getUpdateUserValidation(body);
 
   for (const check of validations) {
+    if (!check.valid) {
+      throw new Error(check.message);
+    }
+  }
+};
+
+export const validateResetPassword = (req) => {
+  if (!req.body) throw new Error("Request body is missing");
+  const body = req.body;
+
+  const fields = Object.keys(body);
+
+  const invalidFields = fields.filter(
+    (field) => !allowedResetPasswordFields.includes(field)
+  );
+  if (invalidFields.length > 0) {
+    throw new Error(`Invalid Fields : ${invalidFields.join(", ")}`);
+  }
+
+  const isMissingFields = allowedResetPasswordFields.filter(
+    (field) => !fields.includes(field)
+  );
+  if (isMissingFields.length > 0)
+    throw new Error(`Missing fields : ${isMissingFields.join(", ")}`);
+
+  const { currentPassword, newPassword, confirmPassword } = body;
+
+  const validation = [
+    { valid: currentPassword, message: "currentPassword should not be empty" },
+    { valid: newPassword, message: "newPassword should not be empty" },
+    { valid: confirmPassword, message: "confirmPassword should not be empty" },
+    {
+      valid: validator.isStrongPassword(newPassword, {
+        minLength: 8,
+        minLowercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+        minUppercase: 1,
+      }),
+      message: "Password is invalid",
+    },
+    {
+      valid: newPassword === confirmPassword,
+      message: "new and confirm password is not matched",
+    },
+  ];
+
+  for (const check of validation) {
     if (!check.valid) {
       throw new Error(check.message);
     }
