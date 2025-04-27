@@ -6,6 +6,7 @@ import connectDB from "./config/database.js";
 import authRouter from "./routes/auth.js";
 import profileRouter from "./routes/profile.js";
 import userRouter from "./routes/user.js";
+import requestRouter from "./routes/request.js";
 
 //Creating an express application - Server
 const app = express();
@@ -18,6 +19,7 @@ app.use(cookieParser()); // This middleware is used to convert the cookie javasc
 app.use('/auth', authRouter)
 app.use('/profile', profileRouter)
 app.use('/user', userRouter)
+app.use('/request',requestRouter)
 
 
 //Connnecting to database

@@ -4,3 +4,4 @@ export const allowedSignUpFields = ["firstName","lastName","email","password","a
 export const allowedLoginFields = ["email","password"]
 export const allowedGenders = ["Male","Female","Others"];
 export const allowedResetPasswordFields = ["currentPassword", "newPassword", "confirmPassword"]
+export const allowedStatus = ["ignored", "intereseted","accept", 'reject']

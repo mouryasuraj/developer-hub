@@ -263,3 +263,17 @@ export const validateResetPassword = (req) => {
     }
   }
 };
+
+
+
+
+export const validateConnectionSentRequestBody = (req) =>{
+
+  const {status} = req.params
+
+  if(status!=="ignored" && status!=="interested"){
+    throw new Error("Status is invalid")
+  }
+  
+
+}

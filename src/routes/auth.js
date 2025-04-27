@@ -58,12 +58,16 @@ authRouter.post("/login", async (req, res) => {
   try {
     validateLoginData(body);
     const { email, password } = body;
+    console.log(email);
+    
 
     // Check user exist in DB or not
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email:email });
     if (!user) {
       throw new Error("Invalid Credentials");
     }
+    console.log(user);
+    
     const isPasswordCorrect = await user.verifyPassword(password);
     if (!isPasswordCorrect) {
       throw new Error("Invalid Credentials");
